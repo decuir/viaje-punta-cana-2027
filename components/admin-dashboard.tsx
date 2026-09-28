@@ -10,7 +10,7 @@ import { LogOut, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
 const META_PUNTOS = 90
 const MEDIA_META = META_PUNTOS / 2
 
-export function AdminDashboard({ user }: { user: any }) {
+export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) {
   const [submissions, setSubmissions] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -19,6 +19,7 @@ export function AdminDashboard({ user }: { user: any }) {
   const [distributors, setDistributors] = useState<any[]>([])
   const [modalImage, setModalImage] = useState<string | null>(null)
   const [imagenesRotas, setImagenesRotas] = useState<Record<string, boolean>>({})
+  const [cargando, setCargando] = useState(true)
 
   useEffect(() => {
     loadData()
@@ -42,21 +43,20 @@ export function AdminDashboard({ user }: { user: any }) {
         .from('distributors')
         .select('*')
 
-      if (dists) {
-        const distWithPoints = await Promise.all(dists.map(async (d) => {
-          const { data: points } = await supabase
-            .from('submissions')
-            .select('points')
-            .eq('distributor_id', d.id)
-            .eq('status', 'approved')
-
-          const total = points?.reduce((sum, p) => sum + (p.points || 0), 0) || 0
-          return { ...d, totalPoints: total }
-        }))
-        setDistributors(distWithPoints)
+      // Los puntos se suman sobre las evidencias ya consultadas arriba. Pedirlos
+      // por distribuidor eran tantas consultas como distribuidores, y mientras
+      // llegaban el panel mostraba todo en cero.
+      const totales = new Map<string, number>()
+      for (const s of subs || []) {
+        if (s.status !== 'approved') continue
+        totales.set(s.distributor_id, (totales.get(s.distributor_id) || 0) + (s.points || 0))
       }
+
+      setDistributors((dists || []).map((d) => ({ ...d, totalPoints: totales.get(d.id) || 0 })))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar')
+    } finally {
+      setCargando(false)
     }
   }
 
@@ -109,11 +109,24 @@ export function AdminDashboard({ user }: { user: any }) {
   const ganadores = ordenados.filter(d => d.totalPoints >= META_PUNTOS)
   const enCamino = ordenados.filter(d => d.totalPoints >= MEDIA_META && d.totalPoints < META_PUNTOS)
 
+  if (cargando) {
+    return (
+      <div className="min-h-screen bg-slate-50 p-4 dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto py-24 text-center text-slate-500">
+          Cargando datos del panel...
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 p-4 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Panel de Admin - Viaje Punta Cana</h1>
+          <div>
+            <h1 className="text-3xl font-bold">Hola, {nombre}</h1>
+            <p className="text-sm text-slate-500">Panel de Admin · Viaje Punta Cana</p>
+          </div>
           <Button variant="outline" onClick={handleLogout}>
             <LogOut className="h-4 w-4 mr-2" />
             Cerrar sesión

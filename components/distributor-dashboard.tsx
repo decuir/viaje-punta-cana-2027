@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Upload, LogOut, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-export function DistributorDashboard({ user }: { user: any }) {
+export function DistributorDashboard({ user, nombre }: { user: any; nombre: string }) {
   const [totalPoints, setTotalPoints] = useState(0)
   const [submissions, setSubmissions] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -131,7 +131,10 @@ export function DistributorDashboard({ user }: { user: any }) {
     <div className="min-h-screen bg-slate-50 p-4 dark:bg-slate-950">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Mi Panel de Viaje</h1>
+          <div>
+            <h1 className="text-3xl font-bold">Hola, {nombre}</h1>
+            <p className="text-sm text-slate-500">Mi Panel de Viaje</p>
+          </div>
           <Button variant="outline" onClick={handleLogout}>
             <LogOut className="h-4 w-4 mr-2" />
             Cerrar sesión

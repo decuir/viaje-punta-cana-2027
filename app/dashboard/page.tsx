@@ -9,6 +9,7 @@ import { AdminDashboard } from '@/components/admin-dashboard'
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [nombre, setNombre] = useState('')
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -24,7 +25,7 @@ export default function Dashboard() {
 
       const { data: distributor } = await supabase
         .from('distributors')
-        .select('is_admin')
+        .select('is_admin, full_name')
         .eq('auth_id', user.id)
         .maybeSingle()
 
@@ -38,6 +39,7 @@ export default function Dashboard() {
 
       setUser(user)
       setIsAdmin(distributor.is_admin || false)
+      setNombre(distributor.full_name || '')
       setLoading(false)
     }
 
@@ -59,5 +61,9 @@ export default function Dashboard() {
     return null
   }
 
-  return isAdmin ? <AdminDashboard user={user} /> : <DistributorDashboard user={user} />
+  return isAdmin ? (
+    <AdminDashboard user={user} nombre={nombre} />
+  ) : (
+    <DistributorDashboard user={user} nombre={nombre} />
+  )
 }
