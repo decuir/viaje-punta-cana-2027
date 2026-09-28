@@ -20,6 +20,7 @@ export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) 
   const [modalImage, setModalImage] = useState<string | null>(null)
   const [imagenesRotas, setImagenesRotas] = useState<Record<string, boolean>>({})
   const [cargando, setCargando] = useState(true)
+  const [aviso, setAviso] = useState('')
 
   useEffect(() => {
     loadData()
@@ -71,6 +72,7 @@ export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) 
 
       if (err) throw err
       setEditingId(null)
+      setAviso(`Evidencia aprobada con ${points} puntos`)
       await loadData()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al aprobar')
@@ -137,6 +139,13 @@ export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) 
           <div className="flex gap-2 rounded-md bg-red-50 p-3 text-sm text-red-800">
             <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
             <span>{error}</span>
+          </div>
+        )}
+
+        {aviso && (
+          <div className="flex gap-2 rounded-md bg-green-50 p-3 text-sm text-green-800 border border-green-200">
+            <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <span>{aviso}</span>
           </div>
         )}
 
