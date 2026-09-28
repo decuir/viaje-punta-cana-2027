@@ -10,6 +10,15 @@ import { etiquetaNivel } from '@/lib/niveles'
 
 const META_PUNTOS = 90
 const MEDIA_META = META_PUNTOS / 2
+const PUNTOS_BASE = 3
+
+// El 0 escrito a mano es una decision del admin: aceptar la evidencia sin
+// sumar puntos. Solo el campo vacio cae en la base del paquete.
+function puntosAOtorgar(texto: string) {
+  const n = parseInt(texto, 10)
+  if (Number.isNaN(n)) return PUNTOS_BASE
+  return Math.max(0, n)
+}
 
 export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) {
   const [submissions, setSubmissions] = useState<any[]>([])
@@ -73,7 +82,7 @@ export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) 
 
       if (err) throw err
       setEditingId(null)
-      setAviso(`Evidencia aprobada con ${points} puntos`)
+      setAviso(points === 0 ? 'Evidencia aprobada sin sumar puntos' : `Evidencia aprobada con ${points} puntos`)
       await loadData()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al aprobar')
@@ -339,19 +348,21 @@ export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) 
                     {editingId === sub.id ? (
                       <div className="flex gap-2 items-end">
                         <div className="flex-1">
-                          <label className="text-sm font-medium">Puntos (3 base + extras)</label>
+                          <label className="text-sm font-medium">Puntos a otorgar</label>
                           <Input
                             type="number"
-                            min="3"
+                            min="0"
                             value={editingPoints}
                             onChange={(e) => setEditingPoints(e.target.value)}
                             placeholder="3"
                           />
-                          <p className="text-xs text-slate-500 mt-1">Mínimo 3 puntos (base). Agregar extras si lo merece.</p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            3 es la base del paquete. Pon 0 para aceptar la evidencia sin sumar puntos.
+                          </p>
                         </div>
                         <Button
                           size="sm"
-                          onClick={() => handleApprove(sub.id, parseInt(editingPoints) || 3)}
+                          onClick={() => handleApprove(sub.id, puntosAOtorgar(editingPoints))}
                           disabled={loading}
                         >
                           Aprobar
