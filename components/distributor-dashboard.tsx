@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Upload, LogOut, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { OPCIONES_NIVEL, etiquetaNivel } from '@/lib/niveles'
+import { PERIODOS, periodoActual, periodoDeFecha, rangoLegible } from '@/lib/periodos'
 
 export function DistributorDashboard({ user, nombre }: { user: any; nombre: string }) {
   const [totalPoints, setTotalPoints] = useState(0)
@@ -127,6 +128,15 @@ export function DistributorDashboard({ user, nombre }: { user: any; nombre: stri
   }
 
   const progress = (totalPoints / 90) * 100
+  const periodoEnCurso = periodoActual()
+
+  const puntosPorPeriodo = new Map<string, number>()
+  for (const s of submissions) {
+    if (s.status !== 'approved') continue
+    const p = periodoDeFecha(s.created_at)
+    if (!p) continue
+    puntosPorPeriodo.set(p.codigo, (puntosPorPeriodo.get(p.codigo) || 0) + (s.points || 0))
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 dark:bg-slate-950">
@@ -182,6 +192,42 @@ export function DistributorDashboard({ user, nombre }: { user: any; nombre: stri
                 <span>¡Vas bien! Te faltan {90 - totalPoints} puntos para ganar</span>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Puntos por Período</CardTitle>
+            <CardDescription>Calendario oficial de calificación · 12 semanas</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              <div className="grid grid-cols-12 gap-2 border-b pb-2 text-xs font-bold text-slate-600">
+                <div className="col-span-2">Semana</div>
+                <div className="col-span-3">Período</div>
+                <div className="col-span-4">Fechas</div>
+                <div className="col-span-3 text-right">Puntos</div>
+              </div>
+              {PERIODOS.map((p) => {
+                const puntos = puntosPorPeriodo.get(p.codigo) || 0
+                const esActual = p.codigo === periodoEnCurso?.codigo
+                return (
+                  <div
+                    key={p.codigo}
+                    className={`grid grid-cols-12 gap-2 rounded px-1 py-2 text-sm ${
+                      esActual ? 'bg-blue-50 font-medium dark:bg-blue-950' : ''
+                    }`}
+                  >
+                    <div className="col-span-2">{p.semana}</div>
+                    <div className="col-span-3 text-slate-600 dark:text-slate-400">{p.codigo}</div>
+                    <div className="col-span-4 text-xs text-slate-500">{rangoLegible(p)}</div>
+                    <div className={`col-span-3 text-right ${puntos > 0 ? 'font-semibold text-green-600' : 'text-slate-400'}`}>
+                      {puntos}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </CardContent>
         </Card>
 

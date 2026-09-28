@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LogOut, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
 import { etiquetaNivel } from '@/lib/niveles'
+import { PERIODOS, periodoActual, periodoDeFecha, rangoLegible } from '@/lib/periodos'
 
 const META_PUNTOS = 90
 const MEDIA_META = META_PUNTOS / 2
@@ -120,6 +121,18 @@ export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) 
   const ordenados = [...distributors].sort((a, b) => b.totalPoints - a.totalPoints)
   const ganadores = ordenados.filter(d => d.totalPoints >= META_PUNTOS)
   const enCamino = ordenados.filter(d => d.totalPoints >= MEDIA_META && d.totalPoints < META_PUNTOS)
+
+  const periodoEnCurso = periodoActual()
+  const resumenPeriodos = PERIODOS.map((p) => {
+    const delPeriodo = submissions.filter(
+      (s) => s.status === 'approved' && periodoDeFecha(s.created_at)?.codigo === p.codigo
+    )
+    return {
+      ...p,
+      puntos: delPeriodo.reduce((suma, s) => suma + (s.points || 0), 0),
+      evidencias: delPeriodo.length,
+    }
+  })
 
   if (cargando) {
     return (
@@ -241,6 +254,75 @@ export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) 
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Puntos por Período</CardTitle>
+              <CardDescription>Total de toda la red · 12 semanas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1">
+                <div className="grid grid-cols-12 gap-2 border-b pb-2 text-xs font-bold text-slate-600">
+                  <div className="col-span-2">Sem.</div>
+                  <div className="col-span-3">Período</div>
+                  <div className="col-span-3">Fechas</div>
+                  <div className="col-span-2 text-right">Evid.</div>
+                  <div className="col-span-2 text-right">Puntos</div>
+                </div>
+                {resumenPeriodos.map((p) => {
+                  const esActual = p.codigo === periodoEnCurso?.codigo
+                  return (
+                    <div
+                      key={p.codigo}
+                      className={`grid grid-cols-12 gap-2 rounded px-1 py-2 text-sm ${
+                        esActual ? 'bg-blue-50 font-medium dark:bg-blue-950' : ''
+                      }`}
+                    >
+                      <div className="col-span-2">{p.semana}</div>
+                      <div className="col-span-3 text-slate-600 dark:text-slate-400">{p.codigo}</div>
+                      <div className="col-span-3 text-xs text-slate-500">{rangoLegible(p)}</div>
+                      <div className="col-span-2 text-right text-slate-500">{p.evidencias}</div>
+                      <div className={`col-span-2 text-right ${p.puntos > 0 ? 'font-semibold text-green-600' : 'text-slate-400'}`}>
+                        {p.puntos}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Total por Distribuidor</CardTitle>
+              <CardDescription>{distributors.length} en total</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-[28rem] space-y-1 overflow-y-auto">
+                {ordenados.map((d) => (
+                  <div key={d.id} className="flex items-center justify-between rounded px-1 py-2 text-sm">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{d.full_name}</p>
+                      <p className="text-xs text-slate-500">{d.distributor_id}</p>
+                    </div>
+                    <p
+                      className={`flex-none pl-3 font-semibold ${
+                        d.totalPoints >= META_PUNTOS
+                          ? 'text-green-600'
+                          : d.totalPoints >= MEDIA_META
+                          ? 'text-yellow-600'
+                          : 'text-slate-500'
+                      }`}
+                    >
+                      {d.totalPoints} pts
+                    </p>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
