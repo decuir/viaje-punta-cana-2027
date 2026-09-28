@@ -63,14 +63,37 @@ export function AuthForm() {
           email,
           password,
         })
-        if (signUpError) throw signUpError
 
-        if (data.user) {
+        let cuenta = data.user
+
+        if (signUpError) {
+          if (!signUpError.message.includes('User already registered')) throw signUpError
+
+          // Intento previo que creo la cuenta pero no el perfil: si la contrasena
+          // es correcta se completa el registro, si no quedaria bloqueada para siempre.
+          const { data: sesion, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          })
+          if (signInError) throw signUpError
+
+          const { data: perfilExistente } = await supabase
+            .from('distributors')
+            .select('id')
+            .eq('auth_id', sesion.user.id)
+            .maybeSingle()
+
+          if (perfilExistente) throw signUpError
+
+          cuenta = sesion.user
+        }
+
+        if (cuenta) {
           const { error: profileError } = await supabase
             .from('distributors')
             .insert({
-              auth_id: data.user.id,
-              email: data.user.email,
+              auth_id: cuenta.id,
+              email: cuenta.email,
               full_name: fullName,
               distributor_id: distributorId,
             })

@@ -3,7 +3,12 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { AuthForm } from '@/components/auth-form'
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ sinRegistro?: string }>
+}) {
+  const { sinRegistro } = await searchParams
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,6 +48,13 @@ export default async function Home() {
             Sistema de Control de Evidencias - Sinergia Global
           </p>
         </div>
+
+        {sinRegistro && (
+          <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            Tu correo no tiene un registro completo. Regístrate con tu nombre e ID de
+            distribuidor para poder entrar.
+          </div>
+        )}
 
         <AuthForm />
 

@@ -22,15 +22,22 @@ export default function Dashboard() {
         return
       }
 
-      setUser(user)
-
       const { data: distributor } = await supabase
         .from('distributors')
         .select('is_admin')
         .eq('auth_id', user.id)
-        .single()
+        .maybeSingle()
 
-      setIsAdmin(distributor?.is_admin || false)
+      // Una cuenta de Auth sin perfil no completo el registro: se cierra la
+      // sesion para que no entre al panel con datos vacios.
+      if (!distributor) {
+        await supabase.auth.signOut()
+        window.location.href = '/?sinRegistro=1'
+        return
+      }
+
+      setUser(user)
+      setIsAdmin(distributor.is_admin || false)
       setLoading(false)
     }
 
