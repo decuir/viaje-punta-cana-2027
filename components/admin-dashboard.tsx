@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LogOut, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
 
+const META_PUNTOS = 90
+const MEDIA_META = META_PUNTOS / 2
+
 export function AdminDashboard({ user }: { user: any }) {
   const [submissions, setSubmissions] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -102,6 +105,10 @@ export function AdminDashboard({ user }: { user: any }) {
 
   const pendingSubmissions = submissions.filter(s => s.status === 'pending')
 
+  const ordenados = [...distributors].sort((a, b) => b.totalPoints - a.totalPoints)
+  const ganadores = ordenados.filter(d => d.totalPoints >= META_PUNTOS)
+  const enCamino = ordenados.filter(d => d.totalPoints >= MEDIA_META && d.totalPoints < META_PUNTOS)
+
   return (
     <div className="min-h-screen bg-slate-50 p-4 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -145,8 +152,63 @@ export function AdminDashboard({ user }: { user: any }) {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold text-green-600">
-                {distributors.filter(d => d.totalPoints >= 90).length}
+                {ganadores.length}
               </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card className="border-green-200">
+            <CardHeader>
+              <CardTitle className="text-green-700">🎉 Ya alcanzaron la meta</CardTitle>
+              <CardDescription>{META_PUNTOS} puntos o más · {ganadores.length} distribuidor(es)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {ganadores.length === 0 ? (
+                <p className="text-slate-500 text-sm">Todavía nadie llega a los {META_PUNTOS} puntos</p>
+              ) : (
+                <div className="space-y-2">
+                  {ganadores.map((d) => (
+                    <div key={d.id} className="flex justify-between items-center p-3 border rounded-lg bg-green-50 border-green-200">
+                      <div>
+                        <p className="font-medium text-sm">{d.full_name}</p>
+                        <p className="text-xs text-slate-500">{d.distributor_id} • Nivel {d.level}</p>
+                        <p className="text-xs text-slate-400">{d.email}</p>
+                      </div>
+                      <p className="font-bold text-lg text-green-600">{d.totalPoints} pts</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-yellow-200">
+            <CardHeader>
+              <CardTitle className="text-yellow-700">📈 Más del 50% de avance</CardTitle>
+              <CardDescription>Entre {MEDIA_META} y {META_PUNTOS - 1} puntos · {enCamino.length} distribuidor(es)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {enCamino.length === 0 ? (
+                <p className="text-slate-500 text-sm">Nadie pasa todavía de los {MEDIA_META} puntos</p>
+              ) : (
+                <div className="space-y-2">
+                  {enCamino.map((d) => (
+                    <div key={d.id} className="flex justify-between items-center p-3 border rounded-lg bg-yellow-50 border-yellow-200">
+                      <div>
+                        <p className="font-medium text-sm">{d.full_name}</p>
+                        <p className="text-xs text-slate-500">{d.distributor_id} • Nivel {d.level}</p>
+                        <p className="text-xs text-slate-400">{d.email}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-lg text-yellow-600">{d.totalPoints} pts</p>
+                        <p className="text-xs text-slate-500">faltan {META_PUNTOS - d.totalPoints}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -154,20 +216,20 @@ export function AdminDashboard({ user }: { user: any }) {
         <Card>
           <CardHeader>
             <CardTitle>Distribuidores y Puntos</CardTitle>
-            <CardDescription>Resumen de puntos acumulados</CardDescription>
+            <CardDescription>Resumen de puntos acumulados · {distributors.length} en total</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-2">
               {distributors.map((d) => {
                 const getStatusColor = (points: number) => {
-                  if (points >= 90) return 'bg-green-50 border-green-200'
-                  if (points > 50) return 'bg-yellow-50 border-yellow-200'
+                  if (points >= META_PUNTOS) return 'bg-green-50 border-green-200'
+                  if (points >= MEDIA_META) return 'bg-yellow-50 border-yellow-200'
                   return 'bg-slate-50 border-slate-200'
                 }
 
                 const getPointsColor = (points: number) => {
-                  if (points >= 90) return 'text-green-600'
-                  if (points > 50) return 'text-yellow-600'
+                  if (points >= META_PUNTOS) return 'text-green-600'
+                  if (points >= MEDIA_META) return 'text-yellow-600'
                   return 'text-slate-900'
                 }
 
@@ -182,10 +244,10 @@ export function AdminDashboard({ user }: { user: any }) {
                       <p className={`font-bold text-lg ${getPointsColor(d.totalPoints)}`}>
                         {d.totalPoints} pts
                       </p>
-                      {d.totalPoints >= 90 && (
+                      {d.totalPoints >= META_PUNTOS && (
                         <p className="text-xs text-green-600 font-semibold">✓ Ganador</p>
                       )}
-                      {d.totalPoints > 50 && d.totalPoints < 90 && (
+                      {d.totalPoints >= MEDIA_META && d.totalPoints < META_PUNTOS && (
                         <p className="text-xs text-yellow-600">En camino</p>
                       )}
                     </div>
@@ -198,8 +260,8 @@ export function AdminDashboard({ user }: { user: any }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>🏆 Leaderboard de Puntos</CardTitle>
-            <CardDescription>Ranking de distribuidores</CardDescription>
+            <CardTitle>🏆 Clasificación de Puntos</CardTitle>
+            <CardDescription>Top 10 de {distributors.length} distribuidores</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -210,12 +272,12 @@ export function AdminDashboard({ user }: { user: any }) {
                 <div className="col-span-2">Puntos</div>
                 <div className="col-span-2">Estado</div>
               </div>
-              {[...distributors]
-                .sort((a, b) => b.totalPoints - a.totalPoints)
+              {ordenados
+                .slice(0, 10)
                 .map((d, index) => {
                   const getStatusBadge = (points: number) => {
-                    if (points >= 90) return { text: '🎉 Ganador', color: 'text-green-600' }
-                    if (points > 50) return { text: '📈 En camino', color: 'text-yellow-600' }
+                    if (points >= META_PUNTOS) return { text: '🎉 Ganador', color: 'text-green-600' }
+                    if (points >= MEDIA_META) return { text: '📈 En camino', color: 'text-yellow-600' }
                     return { text: '🚀 Iniciando', color: 'text-blue-600' }
                   }
                   const status = getStatusBadge(d.totalPoints)
@@ -223,8 +285,8 @@ export function AdminDashboard({ user }: { user: any }) {
                     <div
                       key={d.id}
                       className={`grid grid-cols-12 gap-2 p-3 rounded-lg border ${
-                        d.totalPoints >= 90 ? 'bg-green-50 border-green-200' :
-                        d.totalPoints > 50 ? 'bg-yellow-50 border-yellow-200' :
+                        d.totalPoints >= META_PUNTOS ? 'bg-green-50 border-green-200' :
+                        d.totalPoints >= MEDIA_META ? 'bg-yellow-50 border-yellow-200' :
                         'bg-slate-50 border-slate-200'
                       }`}
                     >
@@ -239,8 +301,8 @@ export function AdminDashboard({ user }: { user: any }) {
                       </div>
                       <div className="col-span-2">
                         <p className={`font-bold ${
-                          d.totalPoints >= 90 ? 'text-green-600' :
-                          d.totalPoints > 50 ? 'text-yellow-600' :
+                          d.totalPoints >= META_PUNTOS ? 'text-green-600' :
+                          d.totalPoints >= MEDIA_META ? 'text-yellow-600' :
                           'text-slate-900'
                         }`}>
                           {d.totalPoints}
