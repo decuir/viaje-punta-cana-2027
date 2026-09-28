@@ -215,51 +215,6 @@ export function AdminDashboard({ user }: { user: any }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Distribuidores y Puntos</CardTitle>
-            <CardDescription>Resumen de puntos acumulados · {distributors.length} en total</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {distributors.map((d) => {
-                const getStatusColor = (points: number) => {
-                  if (points >= META_PUNTOS) return 'bg-green-50 border-green-200'
-                  if (points >= MEDIA_META) return 'bg-yellow-50 border-yellow-200'
-                  return 'bg-slate-50 border-slate-200'
-                }
-
-                const getPointsColor = (points: number) => {
-                  if (points >= META_PUNTOS) return 'text-green-600'
-                  if (points >= MEDIA_META) return 'text-yellow-600'
-                  return 'text-slate-900'
-                }
-
-                return (
-                  <div key={d.id} className={`flex justify-between items-center p-3 border rounded-lg ${getStatusColor(d.totalPoints)}`}>
-                    <div>
-                      <p className="font-medium text-sm">{d.full_name}</p>
-                      <p className="text-xs text-slate-500">{d.distributor_id} • Nivel {d.level}</p>
-                      <p className="text-xs text-slate-400">{d.email}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-bold text-lg ${getPointsColor(d.totalPoints)}`}>
-                        {d.totalPoints} pts
-                      </p>
-                      {d.totalPoints >= META_PUNTOS && (
-                        <p className="text-xs text-green-600 font-semibold">✓ Ganador</p>
-                      )}
-                      {d.totalPoints >= MEDIA_META && d.totalPoints < META_PUNTOS && (
-                        <p className="text-xs text-yellow-600">En camino</p>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
             <CardTitle>🏆 Clasificación de Puntos</CardTitle>
             <CardDescription>Top 10 de {distributors.length} distribuidores</CardDescription>
           </CardHeader>
@@ -275,12 +230,7 @@ export function AdminDashboard({ user }: { user: any }) {
               {ordenados
                 .slice(0, 10)
                 .map((d, index) => {
-                  const getStatusBadge = (points: number) => {
-                    if (points >= META_PUNTOS) return { text: '🎉 Ganador', color: 'text-green-600' }
-                    if (points >= MEDIA_META) return { text: '📈 En camino', color: 'text-yellow-600' }
-                    return { text: '🚀 Iniciando', color: 'text-blue-600' }
-                  }
-                  const status = getStatusBadge(d.totalPoints)
+                  const esGanador = d.totalPoints >= META_PUNTOS
                   return (
                     <div
                       key={d.id}
@@ -308,8 +258,8 @@ export function AdminDashboard({ user }: { user: any }) {
                           {d.totalPoints}
                         </p>
                       </div>
-                      <div className={`col-span-2 text-xs font-semibold ${status.color}`}>
-                        {status.text}
+                      <div className="col-span-2 text-xs font-semibold text-green-600">
+                        {esGanador ? '🎉 Ganador' : ''}
                       </div>
                     </div>
                   )
