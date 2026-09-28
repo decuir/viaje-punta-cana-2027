@@ -1,36 +1,144 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistema de Control de Viaje Punta Cana 2027
 
-## Getting Started
+Sistema web para controlar evidencias de compra y puntos acumulados para ganar el viaje a Punta Cana 2027 de Sinergia Global.
 
-First, run the development server:
+## Características
+
+✅ **Autoregistro de distribuidores** con email y contraseña  
+✅ **Subida de evidencias** de compra (imágenes)  
+✅ **Dashboard de admin** para aprobar/rechazar evidencias  
+✅ **Asignación automática de puntos** (3 pts base + puntos extras del admin)  
+✅ **Dashboard de distribuidor** con progreso hacia los 90 puntos  
+✅ **Seguimiento de 12 semanas** (28 sept. - 21 dic. 2026)  
+✅ **Niveles 1 y 2** de distribuidores  
+✅ **Storage de imágenes** en Supabase  
+
+## Tech Stack
+
+- **Frontend**: Next.js 15 + React + TypeScript
+- **UI**: Tailwind CSS + shadcn/ui
+- **Backend**: Supabase (PostgreSQL + Auth + Storage)
+- **Deploy**: Vercel
+
+## Setup
+
+### 1. Clonar y instalar dependencias
+
+```bash
+npm install
+```
+
+### 2. Configurar Supabase
+
+1. Crea un proyecto en [supabase.com](https://supabase.com)
+2. Copia la URL y la anon key del proyecto
+3. Agrega a `.env.local`:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxxx...
+```
+
+### 3. Crear tablas en Supabase
+
+1. Ve a SQL Editor en Supabase Dashboard
+2. Copia y ejecuta el contenido de `SQL_SETUP.sql`
+
+### 4. Crear Storage Bucket
+
+1. Ve a Storage en Supabase Dashboard
+2. Crea un nuevo bucket llamado `submissions`
+3. Hazlo público (public policy)
+
+### 5. Configurar Admin
+
+Para que un usuario sea admin, actualiza manualmente en la base de datos:
+
+```sql
+UPDATE public.distributors 
+SET is_admin = true 
+WHERE email = 'tu@email.com';
+```
+
+O usa el dashboard de Supabase para editar la fila.
+
+### 6. Ejecutar localmente
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Flujo de Uso
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Para Distribuidores
 
-## Learn More
+1. Regístrate con email, contraseña, nombre completo e ID distribuidor
+2. Selecciona tu nivel (1 o 2)
+3. Sube evidencia de compra (imagen)
+4. Espera a que el admin apruebe
+5. Acumula puntos hasta 90 para ganar el viaje
 
-To learn more about Next.js, take a look at the following resources:
+### Para Admin
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Inicia sesión (tu cuenta debe tener `is_admin = true`)
+2. Ve el panel de "Evidencias Pendientes"
+3. Revisa la imagen de compra
+4. Asigna puntos (3 por defecto, o más si lo deseas)
+5. Aprueba o rechaza la evidencia
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Estructura de Base de Datos
 
-## Deploy on Vercel
+### Tabla: distributors
+- `id` (UUID, PK)
+- `auth_id` (UUID, FK a auth.users)
+- `email` (text)
+- `full_name` (text) - Nombre completo del distribuidor
+- `distributor_id` (text) - ID único del distribuidor (ej: SG-12345)
+- `level` (integer) - 1 o 2
+- `is_admin` (boolean)
+- `created_at`, `updated_at`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Tabla: campaigns
+- `id` (UUID, PK)
+- `name` (text)
+- `start_date`, `end_date` (timestamp)
+- `goal_points` (integer) - 90 por defecto
+- `status` (text) - active/inactive
+- `created_at`, `updated_at`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Tabla: submissions
+- `id` (UUID, PK)
+- `distributor_id` (UUID, FK)
+- `campaign_id` (UUID, FK)
+- `image_url` (text)
+- `status` (text) - pending/approved/rejected
+- `level` (integer) - 1 o 2
+- `points` (integer) - puntos asignados
+- `notes` (text)
+- `created_at`, `approved_at`, `updated_at`
+
+## Deploy en Vercel
+
+1. Pushea el repo a GitHub
+2. Importa el proyecto en [Vercel](https://vercel.com)
+3. Agrega las variables de entorno en Vercel:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. Deploy automático en cada push
+
+## Seguridad
+
+- Autenticación con Supabase Auth (email + password)
+- Row Level Security (RLS) habilitado en tablas
+- Distribuidores solo ven sus propios datos
+- Admin tiene acceso total
+- Imágenes almacenadas en Storage de Supabase
+
+## Variables de Entorno
+
+```
+NEXT_PUBLIC_SUPABASE_URL=<tu-url-supabase>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<tu-anon-key>
+```
