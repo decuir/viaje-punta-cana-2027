@@ -77,8 +77,8 @@ export function DistributorDashboard({ user }: { user: any }) {
         throw new Error('No se encontró tu perfil. Contacta al administrador.')
       }
 
-      // URL de placeholder (actualizar con storage después)
-      const publicUrl = `https://via.placeholder.com/800x600?text=${selectedFile.name}`
+      // URL de imagen de prueba funcional
+      const publicUrl = `https://images.unsplash.com/photo-1574519320219-553eb213f72d?w=800&h=600&fit=crop`
 
       const { data: campaign } = await supabase
         .from('campaigns')
