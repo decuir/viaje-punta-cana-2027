@@ -12,10 +12,21 @@ import { PERIODOS, periodoActual, periodoDeFecha, rangoLegible } from '@/lib/per
 // Numero del administrador que recibe el aviso de evidencia nueva.
 const WHATSAPP_ADMIN = '5215512745072'
 
-function enlaceAviso({ nombre, id, nivel }: { nombre: string; id: string; nivel: string }) {
+function enlaceAviso({
+  nombre,
+  correo,
+  id,
+  nivel,
+}: {
+  nombre: string
+  correo: string
+  id: string
+  nivel: string
+}) {
   const texto = [
     'Nueva evidencia para el Viaje Punta Cana 2027',
     `Distribuidor: ${nombre}`,
+    `Correo: ${correo}`,
     `ID: ${id}`,
     `Tipo de compra: ${etiquetaNivel(Number(nivel))}`,
     'Queda pendiente de aprobación en el panel.',
@@ -129,7 +140,9 @@ export function DistributorDashboard({ user, nombre }: { user: any; nombre: stri
       if (insertError) throw insertError
 
       setSuccess('Evidencia enviada para aprobación')
-      setAvisoWhatsapp(enlaceAviso({ nombre, id: miId, nivel: selectedLevel }))
+      setAvisoWhatsapp(
+        enlaceAviso({ nombre, correo: user.email || '', id: miId, nivel: selectedLevel })
+      )
       setSelectedFile(null)
       setSelectedLevel('1')
       await loadData()
