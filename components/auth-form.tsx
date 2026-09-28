@@ -45,6 +45,20 @@ export function AuthForm() {
           return
         }
 
+        // Verificar el ID antes de crear la cuenta: si el perfil falla despues
+        // del signUp queda un usuario de Auth sin perfil que ya no puede registrarse.
+        const { data: taken } = await supabase
+          .from('distributors')
+          .select('id')
+          .eq('distributor_id', distributorId)
+          .maybeSingle()
+
+        if (taken) {
+          setError('Ese ID de distribuidor ya está registrado')
+          setLoading(false)
+          return
+        }
+
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -72,7 +86,16 @@ export function AuthForm() {
 
       window.location.href = '/dashboard'
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error de autenticación')
+      const raw = err instanceof Error ? err.message : String(err)
+      const traducciones: Record<string, string> = {
+        'User already registered': 'Ese correo ya tiene una cuenta',
+        'Invalid login credentials': 'Correo o contraseña incorrectos',
+      }
+      const match = Object.keys(traducciones).find((k) => raw.includes(k))
+      if (match) setError(traducciones[match])
+      else if (raw.includes('distributors_distributor_id_key')) setError('Ese ID de distribuidor ya está registrado')
+      else if (raw.includes('distributors_email_key')) setError('Ese correo ya está registrado')
+      else setError(raw)
     } finally {
       setLoading(false)
     }
