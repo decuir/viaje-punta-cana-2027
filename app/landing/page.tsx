@@ -174,8 +174,16 @@ export default function Landing() {
       </section>
 
       {/* Llamado final */}
-      <section className="bg-gradient-to-br from-blue-900 via-blue-800 to-sky-600">
-        <div className="mx-auto max-w-3xl px-4 py-20 text-center text-white sm:px-6 lg:px-8">
+      <section className="relative isolate overflow-hidden">
+        <Image
+          src="/playa-punta-cana.webp"
+          alt=""
+          fill
+          sizes="100vw"
+          className="-z-20 object-cover"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-blue-950/55 via-blue-900/35 to-blue-950/70" />
+        <div className="mx-auto max-w-3xl px-4 py-24 text-center text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.45)] sm:px-6 sm:py-32 lg:px-8">
           <p className="text-6xl">🏝️</p>
           <h2 className="mt-5 text-4xl font-black sm:text-5xl">
             Punta Cana <span className="text-amber-300">te espera</span>
