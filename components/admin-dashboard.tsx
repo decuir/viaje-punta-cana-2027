@@ -15,6 +15,7 @@ export function AdminDashboard({ user }: { user: any }) {
   const [editingPoints, setEditingPoints] = useState('')
   const [distributors, setDistributors] = useState<any[]>([])
   const [modalImage, setModalImage] = useState<string | null>(null)
+  const [imagenesRotas, setImagenesRotas] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     loadData()
@@ -278,20 +279,26 @@ export function AdminDashboard({ user }: { user: any }) {
                     </div>
 
                     <div className="flex gap-4">
-                      <div
-                        className="border rounded-lg overflow-hidden bg-slate-100 cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => setModalImage(sub.image_url)}
-                      >
-                        <img
-                          src={sub.image_url}
-                          alt="Evidencia de compra"
-                          className="w-32 h-32 object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128"%3E%3Crect fill="%23e2e8f0" width="128" height="128"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="10" fill="%23475569" text-anchor="middle" dominant-baseline="middle"%3E--%3C/text%3E%3C/svg%3E'
-                          }}
-                        />
-                      </div>
-                      <p className="text-xs text-slate-500 flex items-center">Click para ver en grande</p>
+                      {imagenesRotas[sub.id] ? (
+                        <div className="w-32 h-32 border rounded-lg bg-slate-100 flex items-center justify-center text-xs text-slate-500 text-center px-2">
+                          Imagen no disponible
+                        </div>
+                      ) : (
+                        <div
+                          className="border rounded-lg overflow-hidden bg-slate-100 cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => setModalImage(sub.image_url)}
+                        >
+                          <img
+                            src={sub.image_url}
+                            alt="Evidencia de compra"
+                            className="w-32 h-32 object-cover"
+                            onError={() => setImagenesRotas((prev) => ({ ...prev, [sub.id]: true }))}
+                          />
+                        </div>
+                      )}
+                      <p className="text-xs text-slate-500 flex items-center">
+                        {imagenesRotas[sub.id] ? 'La evidencia no se subió correctamente' : 'Click para ver en grande'}
+                      </p>
                     </div>
 
                     {editingId === sub.id ? (
