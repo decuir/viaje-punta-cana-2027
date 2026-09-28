@@ -14,6 +14,7 @@ export function AdminDashboard({ user }: { user: any }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingPoints, setEditingPoints] = useState('')
   const [distributors, setDistributors] = useState<any[]>([])
+  const [modalImage, setModalImage] = useState<string | null>(null)
 
   useEffect(() => {
     loadData()
@@ -276,15 +277,21 @@ export function AdminDashboard({ user }: { user: any }) {
                       </div>
                     </div>
 
-                    <div className="border rounded-lg overflow-hidden bg-slate-100">
-                      <img
-                        src={sub.image_url}
-                        alt="Evidencia de compra"
-                        className="w-full h-48 object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23e2e8f0" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="16" fill="%23475569" text-anchor="middle" dominant-baseline="middle"%3EImagen no disponible%3C/text%3E%3C/svg%3E'
-                        }}
-                      />
+                    <div className="flex gap-4">
+                      <div
+                        className="border rounded-lg overflow-hidden bg-slate-100 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setModalImage(sub.image_url)}
+                      >
+                        <img
+                          src={sub.image_url}
+                          alt="Evidencia de compra"
+                          className="w-32 h-32 object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128"%3E%3Crect fill="%23e2e8f0" width="128" height="128"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="10" fill="%23475569" text-anchor="middle" dominant-baseline="middle"%3E--%3C/text%3E%3C/svg%3E'
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-slate-500 flex items-center">Click para ver en grande</p>
                     </div>
 
                     {editingId === sub.id ? (
@@ -378,6 +385,35 @@ export function AdminDashboard({ user }: { user: any }) {
           </CardContent>
         </Card>
       </div>
+
+      {modalImage && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setModalImage(null)}
+        >
+          <div
+            className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="font-semibold">Evidencia de Compra</h3>
+              <button
+                onClick={() => setModalImage(null)}
+                className="text-slate-500 hover:text-slate-700 text-2xl leading-none"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto flex items-center justify-center bg-slate-50 p-4">
+              <img
+                src={modalImage}
+                alt="Evidencia de compra ampliada"
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
