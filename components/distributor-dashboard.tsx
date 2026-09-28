@@ -9,6 +9,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { OPCIONES_NIVEL, etiquetaNivel } from '@/lib/niveles'
 import { PERIODOS, periodoActual, periodoDeFecha, rangoLegible } from '@/lib/periodos'
 
+// Numero del administrador que recibe el aviso de evidencia nueva.
+const WHATSAPP_ADMIN = '5215512745072'
+
+function enlaceAviso({ nombre, id, nivel }: { nombre: string; id: string; nivel: string }) {
+  const texto = [
+    'Nueva evidencia para el Viaje Punta Cana 2027',
+    `Distribuidor: ${nombre}`,
+    `ID: ${id}`,
+    `Tipo de compra: ${etiquetaNivel(Number(nivel))}`,
+    'Queda pendiente de aprobación en el panel.',
+  ].join('\n')
+  return `https://wa.me/${WHATSAPP_ADMIN}?text=${encodeURIComponent(texto)}`
+}
+
 export function DistributorDashboard({ user, nombre }: { user: any; nombre: string }) {
   const [totalPoints, setTotalPoints] = useState(0)
   const [submissions, setSubmissions] = useState<any[]>([])
@@ -17,6 +31,8 @@ export function DistributorDashboard({ user, nombre }: { user: any; nombre: stri
   const [selectedLevel, setSelectedLevel] = useState('1')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [miId, setMiId] = useState('')
+  const [avisoWhatsapp, setAvisoWhatsapp] = useState('')
 
   useEffect(() => {
     loadData()
@@ -33,6 +49,8 @@ export function DistributorDashboard({ user, nombre }: { user: any; nombre: stri
         .single()
 
       if (distributor) {
+        setMiId(distributor.distributor_id || '')
+
         const { data: points } = await supabase
           .from('submissions')
           .select('points')
@@ -111,6 +129,7 @@ export function DistributorDashboard({ user, nombre }: { user: any; nombre: stri
       if (insertError) throw insertError
 
       setSuccess('Evidencia enviada para aprobación')
+      setAvisoWhatsapp(enlaceAviso({ nombre, id: miId, nivel: selectedLevel }))
       setSelectedFile(null)
       setSelectedLevel('1')
       await loadData()
@@ -285,6 +304,17 @@ export function DistributorDashboard({ user, nombre }: { user: any; nombre: stri
                   <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                   <span>{success}</span>
                 </div>
+              )}
+
+              {avisoWhatsapp && (
+                <a
+                  href={avisoWhatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-700"
+                >
+                  Avisar al administrador por WhatsApp
+                </a>
               )}
 
               <Button type="submit" className="w-full" disabled={loading || !selectedFile}>
