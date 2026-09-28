@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LogOut, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
+import { etiquetaNivel } from '@/lib/niveles'
 
 const META_PUNTOS = 90
 const MEDIA_META = META_PUNTOS / 2
@@ -306,7 +307,7 @@ export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) 
                       <div>
                         <p className="font-medium">{sub.distributor?.full_name || 'Distribuidor'}</p>
                         <p className="text-xs text-slate-500">
-                          {sub.distributor?.distributor_id || '-'} • Nivel {sub.level} • {new Date(sub.created_at).toLocaleDateString()}
+                          {sub.distributor?.distributor_id || '-'} • {etiquetaNivel(sub.level)} • {new Date(sub.created_at).toLocaleDateString()}
                         </p>
                         <p className="text-xs text-slate-400">{sub.distributor?.email || '-'}</p>
                       </div>
@@ -404,7 +405,7 @@ export function AdminDashboard({ user, nombre }: { user: any; nombre: string }) 
                 <div key={sub.id} className="flex justify-between items-center p-3 border rounded-lg text-sm">
                   <div>
                     <p className="font-medium">{sub.distributor?.full_name || 'Distribuidor'}</p>
-                    <p className="text-xs text-slate-500">{sub.distributor?.distributor_id || '-'} • Nivel {sub.level}</p>
+                    <p className="text-xs text-slate-500">{sub.distributor?.distributor_id || '-'} • {etiquetaNivel(sub.level)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {sub.status === 'approved' && (

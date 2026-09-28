@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Upload, LogOut, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { OPCIONES_NIVEL, etiquetaNivel } from '@/lib/niveles'
 
 export function DistributorDashboard({ user, nombre }: { user: any; nombre: string }) {
   const [totalPoints, setTotalPoints] = useState(0)
@@ -192,14 +193,17 @@ export function DistributorDashboard({ user, nombre }: { user: any; nombre: stri
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label className="block text-sm font-medium">Selecciona tu Nivel</label>
+                <label className="block text-sm font-medium">Tipo de compra</label>
                 <Select value={selectedLevel} onValueChange={setSelectedLevel}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">Nivel 1</SelectItem>
-                    <SelectItem value="2">Nivel 2</SelectItem>
+                    {OPCIONES_NIVEL.map((o) => (
+                      <SelectItem key={o.valor} value={o.valor}>
+                        {o.etiqueta}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -257,7 +261,7 @@ export function DistributorDashboard({ user, nombre }: { user: any; nombre: stri
                 {submissions.map((sub) => (
                   <div key={sub.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">Nivel {sub.level}</p>
+                      <p className="text-sm font-medium">{etiquetaNivel(sub.level)}</p>
                       <p className="text-xs text-slate-500">
                         {new Date(sub.created_at).toLocaleDateString()}
                       </p>
