@@ -42,3 +42,6 @@ next-env.d.ts
 
 # credenciales de cuentas de prueba (no publicar)
 USUARIOS_PRUEBA.md
+
+# respaldos locales de la base (contienen correos)
+respaldo-*.json
